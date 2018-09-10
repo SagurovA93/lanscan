@@ -56,26 +56,20 @@ class requester(asyncore.dispatcher):
 
 
     def writable(self):
-        print('Writable')
-        # return self.write == True
+        pass
 
 
     def readable(self):
         self.readable_time = time.time() - self.time_sent
-        print('Readable')
 
         if (not self.write and self.timeout < (self.readable_time)):  #
             self.close()
-            # Мы будем читать из сокета только когда нет отправки
-            #        return self.read == True
         return not self.write
 
 
     def handle_write(self):
-        print('Write')
         self.connect((self.destination_address, 0))
         self.packet = self.build_icmp_packet(icmp_identifier=1, icmp_sequence=1)
-        print(self.packet)
         # Время отправки
         self.time_sent = time.time()
 
@@ -88,15 +82,12 @@ class requester(asyncore.dispatcher):
     def handle_read(self):
         packet = self.recv(1024)
         self.close()
-        src_address, icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence, icmp_data = self.ip_packet_analayser(
+        src_address, icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence, time_stamp = self.ip_packet_analayser(
             packet)
-        # TODO: убрать обраобтку времени :)
-        print(src_address, icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence, round(time.time() - icmp_data, 5) )
-
+        print(src_address, icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence, time_stamp)
 
 
     def create_socket(self, family=socket.AF_INET, type=socket.SOCK_RAW):
-        print('Create socket')
         sock_send = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
         sock_send.setblocking(0)
         self.set_socket(sock_send)
@@ -108,18 +99,18 @@ class requester(asyncore.dispatcher):
         icmp_packet = ip_packet[20:]
         icmp_header = icmp_packet[0:8]
         icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence = struct.unpack("!BBHHH", icmp_header)
-        icmp_data = struct.unpack("d", icmp_packet[8:])[0]
+        try:
+            time_stamp = struct.unpack("d", icmp_packet[8:])[0]
+        except:
+            time_stamp = 0
 
-        return src_address, icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence, icmp_data
+        return src_address, icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence, time_stamp
 
 if __name__ == "__main__":
 
     scan_object = {
-        'ip address': '10.4.0.2'
+        'ip address': '172.30.1.1'
     }
 
-    addresses = ['10.4.0.1', '10.4.0.4', '10.4.0.24']
-
-    for address in addresses:
-        requester(destination_address=address)
-    asyncore.loop(timeout=10, use_poll=True)
+    requester(destination_address=scan_object['ip address'])
+    asyncore.loop(timeout=1, use_poll=True)
