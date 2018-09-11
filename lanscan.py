@@ -20,6 +20,7 @@ if __name__ == "__main__":
     print('Ответов с ошибками:', len(other_errors))
 
     #TODO: молчаливый режим ввести
+    #TODO: добавить расчетчик времени сканирования
 
     if len(other_errors) != 0:
         for error in other_errors:
