@@ -1,7 +1,6 @@
 #!/usr/bin/python3.6
 # -*- coding: utf-8 -*-
 
-import sys
 import ipaddress
 import argparse
 import re
@@ -11,25 +10,30 @@ def get_arguments():
     scan_address = []
 
     parser = argparse.ArgumentParser(add_help=True)
-    parser.add_argument('--address', type=ipaddress.IPv4Address)
-    parser.add_argument('--network', type=ipaddress.IPv4Network)
-    parser.add_argument('--range', type=str)
-    parser.add_argument('--networks', type=str)
+    #TODO: Добавить справку в help!
+    #TODO: Добавить аргументы для step, и timeout параметров!
+    parser.add_argument('--address', type=str)
+    parser.add_argument('--network', type=str)
 
     arguments = parser.parse_args()
 
-    if arguments.range != None:
+    if arguments.address != None:
         address_range = []
 
         # Удаляю пробелы из строки
-        arguments.range = re.sub(r'\s+', '', arguments.range, flags=re.UNICODE)
+        arguments.address = re.sub(r'\s+', '', arguments.address, flags=re.UNICODE)
         # Разделяю строку по ',' или ';'
-        split_range = re.split(r'[;,]', arguments.range)
+        split_range = re.split(r'[;,]', arguments.address)
 
         for pair in split_range:
 
             if not re.search(r'-', pair):
-                continue
+                try:
+                    scan_address.append(ipaddress.IPv4Address(pair))
+
+                except ipaddress.AddressValueError:
+                    continue
+
             else:
                 pair = re.split(r'[-]', pair)
 
@@ -56,12 +60,12 @@ def get_arguments():
             for address in range(first_address, second_address + 1):
                 scan_address.append(ipaddress.IPv4Address(address))
 
-    if arguments.networks != None:
+    if arguments.network != None:
 
         networks = []
 
         # Разделяю строку по ',' или ';'
-        split_range = re.split(r'[;,\s]', arguments.networks)
+        split_range = re.split(r'[;,\s]', arguments.network)
 
         for element in split_range:
             try:
@@ -78,6 +82,9 @@ def get_arguments():
             if len(network_hosts) != 0:
                 for address in network_hosts:
                     scan_address.append(address)
+
+    # Сортирую список и оставляю только уникальные элементы
+    scan_address = sorted(list(set(scan_address)))
 
     return scan_address
 
