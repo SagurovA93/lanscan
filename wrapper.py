@@ -14,8 +14,31 @@ def get_arguments():
     #TODO: Добавить аргументы для step, и timeout параметров!
     parser.add_argument('--address', type=str)
     parser.add_argument('--network', type=str)
+    parser.add_argument('--step', type=int)
+    parser.add_argument('--timeout', type=float)
 
     arguments = parser.parse_args()
+
+    if arguments.step != None:
+        step = arguments.step
+        max_step = 900
+
+        if step > max_step:
+            print('Шаг искусственно ограничивается: ', max_step)
+            step = max_step
+
+    else:
+        step = 200
+
+    if arguments.timeout != None:
+        timeout = arguments.timeout
+        min_timeout = 1
+        if timeout < min_timeout:
+            print('Минимальный timeout = 1 секунда')
+            timeout = min_timeout
+
+    else:
+        timeout = 2
 
     if arguments.address != None:
         address_range = []
@@ -86,7 +109,7 @@ def get_arguments():
     # Сортирую список и оставляю только уникальные элементы
     scan_address = sorted(list(set(scan_address)))
 
-    return scan_address
+    return scan_address, step, timeout
 
 
 if __name__ == "__main__":
