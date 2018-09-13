@@ -24,7 +24,7 @@ def get_arguments():
         step = arguments.step
         max_step = 900
 
-        if step > max_step:
+        if (step > max_step) and (arguments.silence == False):
             print('Шаг искусственно ограничивается: ', max_step)
             step = max_step
 
@@ -34,7 +34,7 @@ def get_arguments():
     if arguments.timeout != None:
         timeout = arguments.timeout
         min_timeout = 1
-        if timeout < min_timeout:
+        if (timeout < min_timeout) and (arguments.silence == False):
             print('Минимальный timeout = 1 секунда')
             timeout = min_timeout
 
