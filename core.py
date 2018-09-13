@@ -1,17 +1,14 @@
 #!/usr/bin/python3.6
 # -*- coding: utf-8 -*-
 
+import re
 import socket
 import asyncore
 import struct
 import time
 import random
-import python_arptable
 
 def lanscan(address_pool, step=200, timeout=2):
-
-    print('step =', step,
-          'timeout =', timeout)
 
     alive_hosts = {}
     dead_hosts = []
@@ -102,19 +99,7 @@ def lanscan(address_pool, step=200, timeout=2):
             src_address, icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence, time_stamp = self.ip_packet_analayser(
                 packet)
 
-            #TODO: ядро не успевает добавлять разрешенные mac адреса... т.е. даже при удачном пинге - mac не успевает отрезолвиться...
-            mac_address = self.find_mac(src_address)
-
-            """
-            print(src_address,
-                  mac_address,
-                  icmp_type,
-                  icmp_code,
-                  icmp_cheksum,
-                  icmp_identifier,
-                  icmp_sequence,
-                  round(time.time() - time_stamp, 5))
-            """
+            mac_address = self.find_mac_linux(src_address)
 
             if (icmp_type == 0) and (icmp_code == 0) and (self.destination_address == src_address) and (self.icmp_identifier == icmp_identifier):
 
@@ -159,17 +144,15 @@ def lanscan(address_pool, step=200, timeout=2):
 
             return src_address, icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence, time_stamp
 
-        def find_mac(self, ip_address):
+        #TODO: добавить обработку для windows 
+        def find_mac_linux(self, ip_address):
 
-            arptable = python_arptable.ARPTABLE
-
-            ip_address = str(ip_address)
+            ip_address = str(ip_address) + str(' ')
             mac_address = None
 
-            for arpstring in arptable:
-                if arpstring['IP address'] == ip_address:
-                    mac_address = str(arpstring['HW address']).upper()
-                    break
+            for line in open('/proc/net/arp'):
+                if ip_address in line:
+                    mac_address = re.search(r"(([A-F\d]{1,2}\:){5}[A-F\d]{1,2})", line.upper()).groups()[0]
 
             return mac_address
 
@@ -179,5 +162,4 @@ def lanscan(address_pool, step=200, timeout=2):
             address_pool.remove(address)
         asyncore.loop(timeout=timeout, use_poll=True)
 
-    #TODO: отдавать alive_hosts без повторяющихся ответов
     return alive_hosts, dead_hosts, other_errors
