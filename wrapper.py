@@ -1,21 +1,22 @@
 #!/usr/bin/python3.6
 # -*- coding: utf-8 -*-
 
+import re
 import ipaddress
 import argparse
-import re
 
 def get_arguments():
 
     scan_address = []
 
     parser = argparse.ArgumentParser(add_help=True)
-    #TODO: Добавить справку в help!
-    #TODO: Добавить аргументы для step, и timeout параметров!
-    parser.add_argument('--address', type=str)
-    parser.add_argument('--network', type=str)
-    parser.add_argument('--step', type=int)
-    parser.add_argument('--timeout', type=float)
+    parser.add_argument('--address', type=str, help="Адреса или диапазоны адресов (через \'-\')")
+    parser.add_argument('--network', type=str, help="Адреса сетей для сканирования через \',\'")
+    parser.add_argument('-s', '--step', type=int, help="Шаг сканирования в кол-ве адресов за шаг")
+    parser.add_argument('-t', '--timeout', type=float, help="Время шага в секундах")
+    parser.add_argument('-v', '--verbose', action="store_true", help="Выводит все на stdout")
+    parser.add_argument('-S', '--silence', action="store_true", help="Не выводит ничего на stdout")
+    parser.add_argument('-e', '--errors', action="store_true", help="Выводит информацию об ошибках на stdout")
 
     arguments = parser.parse_args()
 
@@ -109,7 +110,7 @@ def get_arguments():
     # Сортирую список и оставляю только уникальные элементы
     scan_address = sorted(list(set(scan_address)))
 
-    return scan_address, step, timeout
+    return scan_address, step, timeout, arguments.verbose, arguments.silence, arguments.errors
 
 
 if __name__ == "__main__":
