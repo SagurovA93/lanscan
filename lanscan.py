@@ -23,7 +23,11 @@ if __name__ == "__main__":
     if S_mode == False:
 
         for address in alive_hosts:
-            print(address, alive_hosts[address]['mac address'], ' ответил через:', alive_hosts[address]['respond time'])
+            print(address,
+                  alive_hosts[address]['mac address'],
+                  ' ответил через:', alive_hosts[address]['respond time'],
+                  'время ответа:', alive_hosts[address]['request time']
+                  )
 
         print('\nЗатрачено времени:', round(time.time() - start_time, 3), 'секунд')
         print('Адресов просканировано:', address_amount)
