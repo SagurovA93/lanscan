@@ -7,6 +7,7 @@ import asyncore
 import struct
 import time
 import random
+from time import localtime, strftime
 
 def lanscan(address_pool, step=200, timeout=2):
 
@@ -100,6 +101,7 @@ def lanscan(address_pool, step=200, timeout=2):
                 packet)
 
             mac_address = self.find_mac_linux(src_address)
+            self.timerequest = strftime("%Y-%m-%d %H:%M:%S", localtime())
 
             if (icmp_type == 0) and (icmp_code == 0) and (self.destination_address == src_address) and (self.icmp_identifier == icmp_identifier):
 
@@ -107,7 +109,8 @@ def lanscan(address_pool, step=200, timeout=2):
                     'mac address': mac_address,
                     'respond time': round(time.time() - time_stamp, 5),
                     'checksum': icmp_cheksum,
-                    'sequence number': icmp_sequence
+                    'sequence number': icmp_sequence,
+                    'request time': self.timerequest
                 }
 
             elif icmp_type == 3:
@@ -116,7 +119,8 @@ def lanscan(address_pool, step=200, timeout=2):
                     'ip address': self.destination_address,
                     'icmp code': icmp_code,
                     'checksum': icmp_cheksum,
-                    'sequence number': icmp_sequence
+                    'sequence number': icmp_sequence,
+                    'request time': self.timerequest
                 })
 
             else:
@@ -128,7 +132,8 @@ def lanscan(address_pool, step=200, timeout=2):
                     'icmp code': icmp_code,
                     'checksum': icmp_cheksum,
                     'icmp identifier': icmp_identifier,
-                    'sequence number': icmp_sequence
+                    'sequence number': icmp_sequence,
+                    'request time': self.timerequest
                 })
 
         def ip_packet_analayser(self, ip_packet):
@@ -144,7 +149,7 @@ def lanscan(address_pool, step=200, timeout=2):
 
             return src_address, icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence, time_stamp
 
-        #TODO: добавить обработку для windows 
+        #TODO: добавить обработку для windows
         def find_mac_linux(self, ip_address):
 
             ip_address = str(ip_address) + str(' ')
