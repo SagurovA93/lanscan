@@ -25,6 +25,7 @@ if __name__ == "__main__":
         for address in alive_hosts:
             print(address,
                   alive_hosts[address]['mac address'],
+                  alive_hosts[address]['hostname'],
                   ' ответил через:', alive_hosts[address]['respond time']
                   )
 

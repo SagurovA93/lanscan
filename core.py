@@ -24,6 +24,11 @@ def lanscan(address_pool, step=200, timeout=2):
             self.timeout = 1
             self.destination_address = destination_address
             self.handle_write()
+            try:
+                self.dns_hostname = socket.gethostbyaddr(self.destination_address)
+
+            except socket.herror:
+                self.dns_hostname = None
 
         def build_icmp_packet(self, icmp_identifier=1, icmp_sequence=1):
 
@@ -109,6 +114,7 @@ def lanscan(address_pool, step=200, timeout=2):
                     'mac address': mac_address,
                     'respond time': round(time.time() - time_stamp, 5),
                     'checksum': icmp_cheksum,
+                    'hostname': self.dns_hostname,
                     'sequence number': icmp_sequence,
                     'request time': self.timerequest
                 }
@@ -119,6 +125,7 @@ def lanscan(address_pool, step=200, timeout=2):
                     'ip address': self.destination_address,
                     'icmp code': icmp_code,
                     'checksum': icmp_cheksum,
+                    'hostname': self.dns_hostname,
                     'sequence number': icmp_sequence,
                     'request time': self.timerequest
                 })
@@ -128,6 +135,7 @@ def lanscan(address_pool, step=200, timeout=2):
                     'destination address': self.destination_address,
                     'source address': src_address,
                     'mac address': mac_address,
+                    'hostname': self.dns_hostname,
                     'icmp type': icmp_type,
                     'icmp code': icmp_code,
                     'checksum': icmp_cheksum,
