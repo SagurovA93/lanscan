@@ -21,14 +21,9 @@ def lanscan(address_pool, step=200, timeout=2):
             asyncore.dispatcher.__init__(self)
 
             self.create_socket()
-            self.timeout = 1
+            self.timeout = timeout
             self.destination_address = destination_address
             self.handle_write()
-            try:
-                self.dns_hostname = socket.gethostbyaddr(self.destination_address)
-
-            except socket.herror:
-                self.dns_hostname = None
 
         def build_icmp_packet(self, icmp_identifier=1, icmp_sequence=1):
 
@@ -101,7 +96,7 @@ def lanscan(address_pool, step=200, timeout=2):
 
         def handle_read(self):
             packet = self.recv(1024)
-            self.close()
+
             src_address, icmp_type, icmp_code, icmp_cheksum, icmp_identifier, icmp_sequence, time_stamp = self.ip_packet_analayser(
                 packet)
 
@@ -110,22 +105,24 @@ def lanscan(address_pool, step=200, timeout=2):
 
             if (icmp_type == 0) and (icmp_code == 0) and (self.destination_address == src_address) and (self.icmp_identifier == icmp_identifier):
 
+                self.close()
+
                 alive_hosts[src_address] = {
                     'mac address': mac_address,
                     'respond time': round(time.time() - time_stamp, 5),
                     'checksum': icmp_cheksum,
-                    'hostname': self.dns_hostname,
                     'sequence number': icmp_sequence,
                     'request time': self.timerequest
                 }
 
             elif icmp_type == 3:
 
+                self.close()
+
                 dead_hosts.append({
                     'ip address': self.destination_address,
                     'icmp code': icmp_code,
                     'checksum': icmp_cheksum,
-                    'hostname': self.dns_hostname,
                     'sequence number': icmp_sequence,
                     'request time': self.timerequest
                 })
@@ -135,7 +132,6 @@ def lanscan(address_pool, step=200, timeout=2):
                     'destination address': self.destination_address,
                     'source address': src_address,
                     'mac address': mac_address,
-                    'hostname': self.dns_hostname,
                     'icmp type': icmp_type,
                     'icmp code': icmp_code,
                     'checksum': icmp_cheksum,
