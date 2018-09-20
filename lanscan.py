@@ -5,6 +5,7 @@ import time
 import core
 import argparse
 
+from sys import exit
 from utils import get_list_ip
 
 
@@ -26,7 +27,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--timeout', type=int, default=1, help="Время шага в секундах (default: %(default)s, min: 1, max: ...)")
     parser.add_argument('-v', '--verbose', action="store_true", help="Выводит все на stdout")
     parser.add_argument('-S', '--silence', action="store_false", help="Не выводит ничего на stdout")
-    parser.add_argument('-e', '--errors',  action="store_false", help="Выводит информацию об ошибках на stdout")
+    parser.add_argument('-e', '--errors',  action="store_true", help="Выводит информацию об ошибках на stdout")
     args = parser.parse_args()
 
     address_pool   = get_list_ip(args.rangeIP)
@@ -46,13 +47,17 @@ if __name__ == "__main__":
         print(
             'Ожидаемое время сканирования:',
             round((address_amount / step) * timeout + ((address_amount / step) * timeout) * 0.4, 3), 'секунд', '\n')
+    try:
+        alive_hosts, dead_hosts, other_errors = core.lanscan(address_pool, step=step, timeout=timeout)
 
-    alive_hosts, dead_hosts, other_errors = core.lanscan(
-        address_pool, step=step, timeout=timeout)
+    except PermissionError:
+        print('Нужны права администратора')
+        exit(1)
+
 
     if s_mode:
 
-        for address in alive_hosts:
+        for address in sorted(alive_hosts):
             print(address,
                   alive_hosts[address]['mac address'],
                   ' ответил через:', alive_hosts[address]['respond time']
