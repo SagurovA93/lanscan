@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
-import core
+import lanscan.core as core
 import argparse
 
 from sys import exit
